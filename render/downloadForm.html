@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Download Proxy</title>
+</head>
+<body>
+<div style="width:600px; margin: auto;">
+
+	<h2>Download Proxy</h2>
+		
+	<hr />
+
+	<form action="./download" method="post">
+	URL : <input type="text" name="url">
+	<input type="submit" value="Download">
+	<button type="button" onclick="location.href='./download-stream';">Download your PC</button>
+	<button type="button" onclick="location.href='./cancel';">Force Cancel</button>
+	</form>
+
+	<hr />
+
+
+	<div id="status">
+
+	</div>
+
+</div>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+
+	var getStatus = function(){
+		$.get('./download-status', function(data){
+			var zzz = JSON.parse(data);
+			$('#status').html('<h4>Status</h4>');
+			$('#status').append('Connection : ' + zzz.connection === -1 ? 'refuse' : (zzz.connection === 0 ? 'Wait' : (zzz.connection === 1 ? 'Downloading' : 'Finished')) + '<br>');
+			$('#status').append('Download : ' + zzz.downSize + '<br>');
+			$('#status').append('Total Size : ' + (zzz.totalSize !== -1 ? zzz.totalSize : 'Unknown') + '<br>');
+			$('#status').append('Downloading File : ' + zzz.name + '<br>');
+
+			if (zzz.totalSize === -1) zzz.totalSize = 3 * 1024 * 1024 * 1024;
+
+			var percent = ((zzz.downSize / zzz.totalSize) * 100).toFixed(2);
+			
+			var progressbar = '<div style="width: 100%; height:30px; background:#dedede; position:relative;">';
+			progressbar += '<div style="width: ' + Math.floor(percent) + '%; height: 30px; background: #0000FF; position: absolute; top:0; left:0;"></div></div>';
+			
+			var speedMeter = Math.floor(zzz.downSize / Math.floor((zzz.endTime - zzz.startTime) / 1000));
+
+			$('#status').append('Transfer Speed : ' + (speedMeter / 1024 / 1024 * 8).toFixed(2) + 'Mbit/s<br>');
+
+			$('#status').append('Progress : ' + percent + ' % <br> ' + progressbar);
+
+			setTimeout(function(){ getStatus(); }, 100);
+		});
+	};
+
+	getStatus();
+
+});
+</script>
+</body>
+</html>
